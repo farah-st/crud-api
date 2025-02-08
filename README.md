@@ -12,7 +12,7 @@ The **software includes:**
 
 
 **Watch my walkthrough and demo here:** 
-[Software Demo Video](https://www.youtube.com/watch?v=Uc68mumtrLI)
+[Youtube Video Here!](https://www.youtube.com/watch?v=Uc68mumtrLI)
 
 # Development Environment
 
