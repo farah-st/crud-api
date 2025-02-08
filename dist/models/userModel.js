@@ -1,31 +1,39 @@
 "use strict";
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.createUser = exports.getUserById = exports.getUsers = void 0;
-let users = [];
+
+let users = []; // In-memory user store
+
+// Get all users
 const getUsers = () => users;
-exports.getUsers = getUsers;
-const getUserById = (id) => users.find(user => user.id === id);
-exports.getUserById = getUserById;
+
+// Get user by ID
+const getUserById = (id) => users.find(user => user.id === String(id));
+
+// Create a new user
 const createUser = (user) => {
     users.push(user);
     return user;
 };
-exports.createUser = createUser;
+
+// Update user (returns a new object instead of mutating)
 const updateUser = (id, updatedUser) => {
-    const user = (0, exports.getUserById)(id);
-    if (user) {
-        Object.assign(user, updatedUser);
-        return user;
+    const index = users.findIndex(user => user.id === String(id));
+    if (index !== -1) {
+        users[index] = { ...users[index], ...updatedUser }; // Create a new updated object
+        return users[index];
     }
     return undefined;
 };
-exports.updateUser = updateUser;
+
+// Delete user
 const deleteUser = (id) => {
-    const index = users.findIndex(user => user.id === id);
+    const index = users.findIndex(user => user.id === String(id));
     if (index !== -1) {
         users.splice(index, 1);
         return true;
     }
     return false;
 };
-exports.deleteUser = deleteUser;
+
+// Export functions
+module.exports = { getUsers, getUserById, createUser, updateUser, deleteUser };
+

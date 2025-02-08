@@ -1,82 +1,88 @@
 "use strict";
-var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    var desc = Object.getOwnPropertyDescriptor(m, k);
-    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
-      desc = { enumerable: true, get: function() { return m[k]; } };
-    }
-    Object.defineProperty(o, k2, desc);
-}) : (function(o, m, k, k2) {
-    if (k2 === undefined) k2 = k;
-    o[k2] = m[k];
-}));
-var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
-    Object.defineProperty(o, "default", { enumerable: true, value: v });
-}) : function(o, v) {
-    o["default"] = v;
-});
-var __importStar = (this && this.__importStar) || (function () {
-    var ownKeys = function(o) {
-        ownKeys = Object.getOwnPropertyNames || function (o) {
-            var ar = [];
-            for (var k in o) if (Object.prototype.hasOwnProperty.call(o, k)) ar[ar.length] = k;
-            return ar;
-        };
-        return ownKeys(o);
-    };
-    return function (mod) {
-        if (mod && mod.__esModule) return mod;
-        var result = {};
-        if (mod != null) for (var k = ownKeys(mod), i = 0; i < k.length; i++) if (k[i] !== "default") __createBinding(result, mod, k[i]);
-        __setModuleDefault(result, mod);
-        return result;
-    };
-})();
-Object.defineProperty(exports, "__esModule", { value: true });
-exports.deleteUser = exports.updateUser = exports.createUser = exports.getUser = exports.getAllUsers = void 0;
-const UserModel = __importStar(require("../models/userModel"));
+
+const { v4: uuidv4 } = require("uuid"); // Import UUID for unique ID generation
+const { getUsers, getUserById, createUser, updateUser, deleteUser } = require("../models/userModel");
+
+// Get all users
 const getAllUsers = (req, res) => {
-    res.status(200).json(UserModel.getUsers());
+    const users = getUsers();
+    res.status(200).json(users);
 };
-exports.getAllUsers = getAllUsers;
+
+// Get a single user by ID
 const getUser = (req, res) => {
     const id = parseInt(req.params.id);
-    const user = UserModel.getUserById(id);
+    
+    if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
+    }
+
+    const user = getUserById(id);
+    
     if (user) {
         res.status(200).json(user);
-    }
-    else {
-        res.status(404).json({ message: 'User not found' });
+    } else {
+        res.status(404).json({ message: "User not found" });
     }
 };
-exports.getUser = getUser;
-const createUser = (req, res) => {
+
+// Create a new user
+const createNewUser = (req, res) => {
     const { name, email } = req.body;
-    const id = Math.floor(Math.random() * 1000); // Simulate a simple ID generator
-    const newUser = UserModel.createUser({ id, name, email });
+
+    if (!name || !email) {
+        return res.status(400).json({ message: "Name and email are required" });
+    }
+
+    const id = uuidv4(); // Generate a unique ID
+    const newUser = createUser({ id, name, email });
+
     res.status(201).json(newUser);
 };
-exports.createUser = createUser;
-const updateUser = (req, res) => {
+
+// Update an existing user
+const updateExistingUser = (req, res) => {
     const id = parseInt(req.params.id);
-    const updatedUser = req.body;
-    const user = UserModel.updateUser(id, updatedUser);
-    if (user) {
-        res.status(200).json(user);
+
+    if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
     }
-    else {
-        res.status(404).json({ message: 'User not found' });
+
+    const existingUser = getUserById(id);
+    
+    if (!existingUser) {
+        return res.status(404).json({ message: "User not found" });
     }
+
+    const updatedUser = { ...existingUser, ...req.body }; // Merge old & new data
+    const user = updateUser(id, updatedUser);
+
+    res.status(200).json(user);
 };
-exports.updateUser = updateUser;
-const deleteUser = (req, res) => {
+
+// Delete a user
+const deleteExistingUser = (req, res) => {
     const id = parseInt(req.params.id);
-    const success = UserModel.deleteUser(id);
+
+    if (isNaN(id)) {
+        return res.status(400).json({ message: "Invalid ID format" });
+    }
+
+    const success = deleteUser(id);
+
     if (success) {
-        res.status(200).json({ message: 'User deleted' });
-    }
-    else {
-        res.status(404).json({ message: 'User not found' });
+        res.status(200).json({ message: "User deleted successfully" });
+    } else {
+        res.status(404).json({ message: "User not found" });
     }
 };
-exports.deleteUser = deleteUser;
+
+// Export controller functions
+module.exports = {
+    getAllUsers,
+    getUser,
+    createNewUser,
+    updateExistingUser,
+    deleteExistingUser
+};
+
